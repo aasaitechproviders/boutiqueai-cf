@@ -2,30 +2,38 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
 import { verifyPin, getSecurityQuestion, verifySecurityAnswer } from '../api';
 
-// ── Shared PinDots (same component pattern as PinSetupScreen) ─────────────
+// ── Shared PinDots ─────────────────────────────────────────────────────────
 function PinDots({ value, onChange, onComplete, error, disabled }) {
   const inputs = [useRef(), useRef(), useRef(), useRef()];
 
   // Auto-focus first dot on mount
   useEffect(() => { inputs[0].current?.focus(); }, []); // eslint-disable-line
 
-  function handleKey(i, e) {
+  // Handle digit input via onChange — works on both physical & mobile soft keyboards
+  function handleChange(i, e) {
     if (disabled) return;
-    const d = e.key;
-    if (d === 'Backspace') {
+    const raw = e.target.value;
+    // Extract only the last digit typed (input has maxLength=1 but we guard anyway)
+    const digit = raw.replace(/\D/g, '').slice(-1);
+    if (!digit) return;
+    const next = value.slice(0, i) + digit + value.slice(i + 1);
+    onChange(next);
+    if (i < 3) inputs[i + 1].current?.focus();
+    else if (next.length === 4) onComplete?.(next);
+  }
+
+  // Keep onKeyDown only for Backspace — reliable on all platforms
+  function handleKeyDown(i, e) {
+    if (disabled) return;
+    if (e.key === 'Backspace') {
+      e.preventDefault();
       if (value[i]) {
         onChange(value.slice(0, i) + '' + value.slice(i + 1));
       } else if (i > 0) {
         inputs[i - 1].current?.focus();
         onChange(value.slice(0, i - 1) + '' + value.slice(i));
       }
-      return;
     }
-    if (!/^\d$/.test(d)) return;
-    const next = value.slice(0, i) + d + value.slice(i + 1);
-    onChange(next);
-    if (i < 3) inputs[i + 1].current?.focus();
-    else if (next.length === 4) onComplete?.(next);
   }
 
   return (
@@ -39,8 +47,8 @@ function PinDots({ value, onChange, onComplete, error, disabled }) {
           inputMode="numeric"
           maxLength={1}
           value={value[i] || ''}
-          onChange={() => {}}
-          onKeyDown={e => handleKey(i, e)}
+          onChange={e => handleChange(i, e)}
+          onKeyDown={e => handleKeyDown(i, e)}
           onFocus={e => e.target.select()}
           disabled={disabled}
         />
