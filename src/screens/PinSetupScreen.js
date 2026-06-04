@@ -16,22 +16,29 @@ const SECURITY_QUESTIONS = [
 function PinDots({ value, onChange, onComplete, label, error }) {
   const inputs = [useRef(), useRef(), useRef(), useRef()];
 
-  function handleKey(i, e) {
-    const d = e.key;
-    if (d === 'Backspace') {
+  // Handle digit input via onChange — works on both physical & mobile soft keyboards
+  function handleChange(i, e) {
+    const raw = e.target.value;
+    // Extract only the last digit typed (guard against non-numeric paste etc.)
+    const digit = raw.replace(/\D/g, '').slice(-1);
+    if (!digit) return;
+    const next = value.slice(0, i) + digit + value.slice(i + 1);
+    onChange(next);
+    if (i < 3) inputs[i + 1].current?.focus();
+    else if (next.length === 4) onComplete?.(next);
+  }
+
+  // Keep onKeyDown only for Backspace — reliable on all platforms
+  function handleKeyDown(i, e) {
+    if (e.key === 'Backspace') {
+      e.preventDefault();
       if (value[i]) {
         onChange(value.slice(0, i) + '' + value.slice(i + 1));
       } else if (i > 0) {
         inputs[i - 1].current?.focus();
         onChange(value.slice(0, i - 1) + '' + value.slice(i));
       }
-      return;
     }
-    if (!/^\d$/.test(d)) return;
-    const next = value.slice(0, i) + d + value.slice(i + 1);
-    onChange(next);
-    if (i < 3) inputs[i + 1].current?.focus();
-    else if (next.length === 4) onComplete?.(next);
   }
 
   return (
@@ -47,8 +54,8 @@ function PinDots({ value, onChange, onComplete, label, error }) {
             inputMode="numeric"
             maxLength={1}
             value={value[i] || ''}
-            onChange={() => {}}
-            onKeyDown={e => handleKey(i, e)}
+            onChange={e => handleChange(i, e)}
+            onKeyDown={e => handleKeyDown(i, e)}
             onFocus={e => e.target.select()}
           />
         ))}
