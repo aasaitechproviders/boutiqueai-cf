@@ -519,6 +519,9 @@ input{font-family:inherit}
 .prod-slot.filled img{width:100%;height:100%;object-fit:contain;background:var(--surface-2)}
 .prod-slot.add{border:2px dashed var(--brand-ring);background:var(--brand-softer);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;color:var(--brand);transition:.18s;cursor:pointer}
 .prod-slot.add:active{transform:scale(.96);background:var(--brand-soft)}
+/* Uploading slot — shows while FileReader processes image */
+.prod-slot--uploading{background:var(--surface-2);border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center}
+.prod-slot-spinner{width:28px;height:28px;border:3px solid var(--line-2);border-top-color:var(--brand);border-radius:50%;animation:spin .7s linear infinite}
 .prod-cam{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,var(--brand),var(--brand-2));display:flex;align-items:center;justify-content:center;box-shadow:0 6px 14px var(--brand-ring)}
 .prod-cam svg{width:23px;height:23px;color:#fff}
 .prod-add-lbl{font-size:13px;font-weight:700}
@@ -546,6 +549,9 @@ input{font-family:inherit}
 .gen-btn:active{transform:scale(.98)}
 .gen-btn:disabled{opacity:.45;box-shadow:none;cursor:default}
 .gen-btn svg.spark{width:22px;height:22px}
+/* Generate button pulse while generating */
+.gen-btn--pulse{animation:gen-btn-pulse 1.8s ease-in-out infinite;pointer-events:none}
+@keyframes gen-btn-pulse{0%,100%{box-shadow:0 4px 24px var(--brand-ring)}50%{box-shadow:0 4px 36px var(--brand-ring),0 0 0 6px var(--brand-soft)}}
 
 /* ════════════════════ GENERATING ════════════════════ */
 .gen-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 30px;gap:0}
@@ -784,6 +790,11 @@ input{font-family:inherit}
   0%{background-position:-400px 0}
   100%{background-position:400px 0}
 }
+/* Look card image shimmer — shown while lazy image loads */
+.look-card-shimmer{position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,#ececf5 25%,#d8d8e8 50%,#ececf5 75%);background-size:800px 100%;animation:shimmer 1.4s infinite linear}
+/* Button spinner — used in WelcomeScreen and TryOnScreen */
+.btn-spinner{width:18px;height:18px;border:2.5px solid rgba(0,0,0,.15);border-top-color:var(--brand);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+.btn-spinner--light{border-color:rgba(255,255,255,.3);border-top-color:#fff}
 
 /* ════════════════════ RESPONSIVE (small screens) ════════════════════ */
 @media(max-height:700px){

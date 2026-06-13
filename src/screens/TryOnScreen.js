@@ -9,17 +9,20 @@ export default function TryOnScreen({ onGenerate, isGenerating }) {
     showToast, setCurrentScreen,
   } = useApp();
 
-  // Local product files — NOT stored in context, passed directly to onGenerate
   const [productFiles, setProductFiles] = useState([]);
+  const [uploadingIdx, setUploadingIdx] = useState(null); // which slot is reading file
   const productInputRef = useRef(null);
 
   function addProductFile(e) {
     const file = e.target.files[0];
     e.target.value = '';
     if (!file || productFiles.length >= 3) return;
+    const slotIdx = productFiles.length;
+    setUploadingIdx(slotIdx);
     const reader = new FileReader();
     reader.onload = ev => {
       setProductFiles(prev => [...prev, { file, base64: ev.target.result }]);
+      setUploadingIdx(null);
     };
     reader.readAsDataURL(file);
   }
@@ -38,7 +41,6 @@ export default function TryOnScreen({ onGenerate, isGenerating }) {
 
   function handleGenerate() {
     if (!canGenerate) return;
-    // Pass files directly — App.js doesn't rely on context productFiles for mobile
     onGenerate(productFiles);
   }
 
@@ -119,7 +121,16 @@ export default function TryOnScreen({ onGenerate, isGenerating }) {
                   </button>
                 </div>
               ))}
-              {Array.from({ length: Math.max(3 - productFiles.length, 0) }).map((_, i) => (
+
+              {/* Uploading slot — shows spinner while FileReader reads */}
+              {uploadingIdx !== null && (
+                <div className="prod-slot prod-slot--uploading">
+                  <div className="prod-slot-spinner" />
+                </div>
+              )}
+
+              {/* Empty add slots */}
+              {Array.from({ length: Math.max(3 - productFiles.length - (uploadingIdx !== null ? 1 : 0), 0) }).map((_, i) => (
                 <div key={`add-${i}`} className="prod-slot add"
                   onClick={() => productInputRef.current?.click()}>
                   <div className="prod-cam">
@@ -134,18 +145,30 @@ export default function TryOnScreen({ onGenerate, isGenerating }) {
             </div>
           </div>
 
-          {/* Spacer so content clears the fixed generate button */}
           <div style={{ height: 100 }} />
         </div>
       </div>
 
-      {/* Fixed Generate button above bottom nav */}
+      {/* Fixed Generate button */}
       <div className="tryon-foot">
-        <button className="gen-btn" disabled={!canGenerate} onClick={handleGenerate}>
-          <svg className="spark" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2l1.6 6.4L20 10l-6.4 1.6L12 18l-1.6-6.4L4 10l6.4-1.6z"/>
-          </svg>
-          {isGenerating ? 'Generating…' : 'Generate Look'}
+        <button
+          className={`gen-btn${isGenerating ? ' gen-btn--pulse' : ''}`}
+          disabled={!canGenerate}
+          onClick={handleGenerate}
+        >
+          {isGenerating ? (
+            <>
+              <div className="btn-spinner btn-spinner--light" />
+              <span>Generating…</span>
+            </>
+          ) : (
+            <>
+              <svg className="spark" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2l1.6 6.4L20 10l-6.4 1.6L12 18l-1.6-6.4L4 10l6.4-1.6z"/>
+              </svg>
+              Generate Look
+            </>
+          )}
         </button>
       </div>
 

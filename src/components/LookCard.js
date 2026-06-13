@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { timeOf } from '../utils';
 
 export default function LookCard({ item, index, onOpen, onMenu }) {
@@ -9,7 +10,6 @@ export default function LookCard({ item, index, onOpen, onMenu }) {
         className="look-card look-card--expired"
         style={{ animation: `fadeUp .3s ${index * 45}ms both` }}
       >
-        {/* Expired placeholder */}
         <div className="look-card-expired-body">
           <svg
             className="look-card-expired-icon"
@@ -23,8 +23,6 @@ export default function LookCard({ item, index, onOpen, onMenu }) {
           </svg>
           <div className="look-card-expired-label">Look Expired</div>
         </div>
-
-        {/* Menu button — still allow deletion of the record */}
         <button
           className="look-menu"
           onClick={e => { e.stopPropagation(); onMenu(item.id); }}
@@ -36,7 +34,6 @@ export default function LookCard({ item, index, onOpen, onMenu }) {
             <circle cx="12" cy="19" r="1.7"/>
           </svg>
         </button>
-
         <div className="look-footer">
           <div className="look-time">{timeOf(item.created_at)}</div>
         </div>
@@ -44,19 +41,26 @@ export default function LookCard({ item, index, onOpen, onMenu }) {
     );
   }
 
-  // ── Normal state ─────────────────────────────────────────────────────────
+  // ── Normal state — shimmer while image loads ──────────────────────────────
+  const [imgLoaded, setImgLoaded] = useState(false);
+
   return (
     <div
       className="look-card"
       style={{ animation: `fadeUp .3s ${index * 45}ms both` }}
       onClick={() => onOpen(item.id)}
     >
+      {/* Shimmer shown until image finishes loading */}
+      {!imgLoaded && <div className="look-card-shimmer" />}
+
       <img
         className="look-card-img"
         src={item.result_url}
         alt=""
         loading="lazy"
-        onError={e => { e.target.style.opacity = '.3'; }}
+        style={{ opacity: imgLoaded ? 1 : 0, transition: 'opacity .3s ease' }}
+        onLoad={() => setImgLoaded(true)}
+        onError={e => { e.target.style.opacity = '.3'; setImgLoaded(true); }}
       />
       <div className="look-badge">
         <svg viewBox="0 0 24 24" fill="currentColor">

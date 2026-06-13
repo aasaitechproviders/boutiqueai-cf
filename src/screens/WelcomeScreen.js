@@ -8,12 +8,11 @@ export default function WelcomeScreen({ onLogin }) {
   const [phone,   setPhone]   = useState('');
   const [loading, setLoading] = useState(false);
   const [agreed,  setAgreed]  = useState(false);
-  const [shake,   setShake]   = useState(false);   // shake checkbox if user taps Continue without agreeing
+  const [shake,   setShake]   = useState(false);
 
   const biz  = agentConfig?.business_name || agentConfig?.agent_name || 'Boutique';
   const logo = agentConfig?.logo_url || null;
 
-  // Check if this number has logged in before (= returning user, no need to re-show terms)
   const isReturning = !!localStorage.getItem('ba_terms_accepted');
 
   function onPhoneChange(e) {
@@ -23,7 +22,6 @@ export default function WelcomeScreen({ onLogin }) {
   async function continuePhone() {
     if (phone.length < 10 || loading) return;
 
-    // First-time users must accept terms
     if (!isReturning && !agreed) {
       setShake(true);
       setTimeout(() => setShake(false), 600);
@@ -39,7 +37,6 @@ export default function WelcomeScreen({ onLogin }) {
       setStyleProfile(data.style_profile || null);
     } catch (e) { console.warn('[identify]', e.message); }
 
-    // Persist consent so returning users skip the checkbox
     if (!isReturning) localStorage.setItem('ba_terms_accepted', '1');
 
     localStorage.setItem('ba_mobile', raw);
@@ -55,7 +52,6 @@ export default function WelcomeScreen({ onLogin }) {
 
       <img className="w-bg" src="/hero-mobile.png" alt="" draggable={false} onContextMenu={e => e.preventDefault()} />
 
-      {/* Top cluster: logo + brand name */}
       <div className="w-top-cluster">
         <div className="w-logo-overlay">
           <div className="w-logo-box">
@@ -69,7 +65,6 @@ export default function WelcomeScreen({ onLogin }) {
         </div>
       </div>
 
-      {/* Login card */}
       <div className="w-login-card">
 
         <div className="w-card-hdr">
@@ -96,7 +91,6 @@ export default function WelcomeScreen({ onLogin }) {
           />
         </div>
 
-        {/* Terms checkbox — only shown to first-time users */}
         {!isReturning && (
           <div className={`w-terms-row${shake ? ' w-terms-shake' : ''}`}
             onClick={() => setAgreed(v => !v)}>
@@ -122,16 +116,23 @@ export default function WelcomeScreen({ onLogin }) {
         )}
 
         <button
-          className="w-continue-btn"
+          className={`w-continue-btn${loading ? ' w-continue-btn--loading' : ''}`}
           disabled={phone.length < 10 || loading || (!isReturning && !agreed)}
           onClick={continuePhone}
         >
-          <span>{loading ? 'Checking…' : 'Continue'}</span>
-          {!loading && (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <line x1="5" y1="12" x2="19" y2="12"/>
-              <polyline points="12 5 19 12 12 19"/>
-            </svg>
+          {loading ? (
+            <>
+              <div className="btn-spinner" />
+              <span>Checking…</span>
+            </>
+          ) : (
+            <>
+              <span>Continue</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+                <polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </>
           )}
         </button>
 
