@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { timeOf } from '../utils';
 
 export default function LookCard({ item, index, onOpen, onMenu }) {
+  // ALL hooks must be at the top — before any conditional returns
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   // ── Expired state — image deleted from S3 ─────────────────────────────────
   if (item.image_deleted) {
@@ -42,17 +44,13 @@ export default function LookCard({ item, index, onOpen, onMenu }) {
   }
 
   // ── Normal state — shimmer while image loads ──────────────────────────────
-  const [imgLoaded, setImgLoaded] = useState(false);
-
   return (
     <div
       className="look-card"
       style={{ animation: `fadeUp .3s ${index * 45}ms both` }}
       onClick={() => onOpen(item.id)}
     >
-      {/* Shimmer shown until image finishes loading */}
       {!imgLoaded && <div className="look-card-shimmer" />}
-
       <img
         className="look-card-img"
         src={item.result_url}
