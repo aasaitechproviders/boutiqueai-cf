@@ -6,14 +6,11 @@ import { verifyPin, getSecurityQuestion, verifySecurityAnswer } from '../api';
 function PinDots({ value, onChange, onComplete, error, disabled }) {
   const inputs = [useRef(), useRef(), useRef(), useRef()];
 
-  // Auto-focus first dot on mount
   useEffect(() => { inputs[0].current?.focus(); }, []); // eslint-disable-line
 
-  // Handle digit input via onChange — works on both physical & mobile soft keyboards
   function handleChange(i, e) {
     if (disabled) return;
     const raw = e.target.value;
-    // Extract only the last digit typed (input has maxLength=1 but we guard anyway)
     const digit = raw.replace(/\D/g, '').slice(-1);
     if (!digit) return;
     const next = value.slice(0, i) + digit + value.slice(i + 1);
@@ -22,7 +19,6 @@ function PinDots({ value, onChange, onComplete, error, disabled }) {
     else if (next.length === 4) onComplete?.(next);
   }
 
-  // Keep onKeyDown only for Backspace — reliable on all platforms
   function handleKeyDown(i, e) {
     if (disabled) return;
     if (e.key === 'Backspace') {
@@ -74,7 +70,7 @@ function Countdown({ seconds, onExpire }) {
 export default function PinEntryScreen({ onVerified }) {
   const { agentConfig, mobile } = useApp();
 
-  const [view,         setView]         = useState('entry');   // 'entry' | 'forgot_answer' | 'forgot_locked'
+  const [view,         setView]         = useState('entry');
   const [pin,          setPin]          = useState('');
   const [error,        setError]        = useState('');
   const [attemptsLeft, setAttemptsLeft] = useState(null);
@@ -82,7 +78,6 @@ export default function PinEntryScreen({ onVerified }) {
   const [lockSeconds,  setLockSeconds]  = useState(0);
   const [checking,     setChecking]     = useState(false);
 
-  // Forgot PIN state
   const [secQuestion,  setSecQuestion]  = useState('');
   const [secAnswer,    setSecAnswer]    = useState('');
   const [secError,     setSecError]     = useState('');
@@ -91,7 +86,16 @@ export default function PinEntryScreen({ onVerified }) {
 
   const maskedMobile = mobile ? `+91 XXXXX ${mobile.slice(-5)}` : '';
 
-  // Auto-submit when 4 digits entered
+  // ── Switch to a different mobile number ───────────────────────────────────
+  // Last resort — clears stored session and returns to welcome screen.
+  // Used when user forgot both PIN and security answer.
+  function switchUser() {
+    localStorage.removeItem('ba_mobile');
+    localStorage.removeItem('ba_agent_id');
+    sessionStorage.removeItem('ba_pin_ok');
+    window.location.reload();
+  }
+
   async function handlePinComplete(fullPin) {
     if (checking || locked) return;
     setChecking(true);
@@ -130,7 +134,6 @@ export default function PinEntryScreen({ onVerified }) {
     setAttemptsLeft(null);
   }, []);
 
-  // Load security question for forgot flow
   async function openForgot() {
     setLoadingQ(true);
     setSecError('');
@@ -158,9 +161,8 @@ export default function PinEntryScreen({ onVerified }) {
     try {
       const result = await verifySecurityAnswer(agentConfig._id, mobile, secAnswer.trim());
       if (result.verified) {
-        // PIN cleared on backend — app will detect no PIN and show PinSetup
         sessionStorage.removeItem('ba_pin_ok');
-        window.location.reload();  // simplest way to re-trigger boot check
+        window.location.reload();
         return;
       }
       if (result.locked) {
@@ -275,6 +277,17 @@ export default function PinEntryScreen({ onVerified }) {
             </button>
           </div>
         )}
+
+        {/* ── Always-visible escape hatch ───────────────────────────────────
+            Visible on both PIN entry and security question views.
+            Lets user sign in as a different number when they've forgotten
+            both PIN and security answer — no other way out otherwise.    */}
+        <div className="pin-switch-user">
+          <span>Not you or forgot everything?</span>
+          <button className="pin-switch-user-btn" onClick={switchUser}>
+            Use a different number
+          </button>
+        </div>
 
       </div>
     </section>
