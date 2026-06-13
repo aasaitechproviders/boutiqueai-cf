@@ -2,13 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" type="image/x-icon" href="%PUBLIC_URL%/favicon.ico?v=2" />
-    <link rel="shortcut icon" type="image/x-icon" href="%PUBLIC_URL%/favicon.ico?v=2" />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png?v=2" />
+    <!-- PNG favicon — new filename bypasses Cloudflare cache of old favicon.ico -->
+    <link rel="icon" type="image/png" sizes="64x64" href="%PUBLIC_URL%/icon64.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/icon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
     <meta name="theme-color" content="#1A3530" />
     <meta name="description" content="Virtual Try-On powered by BoutiqueAI" />
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <title>BoutiqueAI — Virtual Try-On</title>
   </head>
   <body>
