@@ -40,6 +40,7 @@ export default function DesktopLayout({ onLogin, loading, startGenerate, genProg
   const [phone,         setPhone]         = useState('');
   const [phoneLoading,  setPhoneLoading]  = useState(false);
   const [showResult,    setShowResult]    = useState(false);
+  const [genOverlayDismissed, setGenOverlayDismissed] = useState(false);
 
   // Desktop-local file state (separate from mobile context)
   const [baseFile,      setBaseFile]      = useState(null);   // { file, base64 }
@@ -481,9 +482,20 @@ export default function DesktopLayout({ onLogin, loading, startGenerate, genProg
       <input ref={profileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={pickProfilePhoto} />
 
       {/* Generating overlay — z-index 90, above everything */}
-      {isGenerating && (
+      {isGenerating && !genOverlayDismissed && (
         <div className="dt-gen-overlay">
           <div className="dt-gen-card">
+            {/* Close button — job keeps running in background */}
+            <button
+              className="dt-gen-close"
+              onClick={() => setGenOverlayDismissed(true)}
+              aria-label="Close"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
             <div className="dt-gen-ring-wrap">
               <div className="dt-gen-ring-bg" />
               <svg className="dt-gen-ring" viewBox="0 0 130 130">
@@ -514,6 +526,17 @@ export default function DesktopLayout({ onLogin, loading, startGenerate, genProg
                 <div className="dt-gen-bar-fill" style={{ width: `${pct}%` }} />
               </div>
               <div className="dt-gen-pct">{pct}%</div>
+            </div>
+            {/* Background process notice */}
+            <div className="dt-gen-bg-notice">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
+                <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+                <line x1="6" y1="1" x2="6" y2="4"/>
+                <line x1="10" y1="1" x2="10" y2="4"/>
+                <line x1="14" y1="1" x2="14" y2="4"/>
+              </svg>
+              <span>You can close this — your result will appear automatically when ready.</span>
             </div>
             <div className="dt-gen-feats">
               {[
