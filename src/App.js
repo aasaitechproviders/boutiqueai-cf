@@ -301,6 +301,13 @@ function AppInner() {
     if (success) setGenProgress(100);
   }
 
+  // User closes the generating screen — job keeps running in background.
+  // Poll is still active in startGenerate(); when done it shows toast + navigates to result.
+  function handleGeneratingClose() {
+    setCurrentScreen('home');
+    showToast("Still generating your look — we'll notify you when it's ready! 🔔");
+  }
+
   function renderScreen() {
     switch (currentScreen) {
       case 'welcome':    return <WelcomeScreen onLogin={onLogin} />;
@@ -308,7 +315,7 @@ function AppInner() {
       case 'looks':         return <LooksScreen />;
       case 'notifications':  return <NotificationsScreen />;
       case 'tryon':      return <TryOnScreen onGenerate={startGenerate} isGenerating={isGeneratingLocal} />;
-      case 'generating': return <GeneratingScreen progress={genProgress} />;
+      case 'generating': return <GeneratingScreen progress={genProgress} onClose={handleGeneratingClose} />;
       case 'result':     return <ResultScreen justGenerated={justGenerated} />;
       case 'profile':    return <ProfileScreen />;
       case 'terms':      return <TermsScreen />;

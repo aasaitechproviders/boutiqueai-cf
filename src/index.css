@@ -566,6 +566,10 @@ input{font-family:inherit}
 .gen-title{font-size:22px;font-weight:800;letter-spacing:-.01em;margin-bottom:8px;text-align:center}
 .gen-sub{font-size:14px;color:var(--ink-2);text-align:center;line-height:1.5;max-width:280px;font-weight:500}
 .gen-bar-row{display:flex;align-items:center;gap:12px;width:100%;max-width:280px;margin:22px auto 0}
+/* Background process notice — shown below progress bar */
+.gen-bg-notice{display:flex;align-items:flex-start;gap:10px;width:100%;max-width:300px;margin:16px auto 0;padding:12px 14px;background:var(--surface-2);border:1px solid var(--line);border-radius:14px}
+.gen-bg-notice svg{width:18px;height:18px;color:var(--brand);flex-shrink:0;margin-top:1px}
+.gen-bg-notice-text{font-size:12.5px;color:var(--ink-2);line-height:1.55}
 .gen-bar{flex:1;height:6px;border-radius:4px;background:var(--line-2);overflow:hidden}
 .gen-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--brand),var(--brand-2));transition:width .3s ease}
 .gen-pct{font-size:13px;font-weight:800;color:var(--brand);width:38px;text-align:right}
