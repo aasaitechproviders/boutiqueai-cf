@@ -20,7 +20,11 @@ export default function LooksScreen() {
 
   function openResult(id) {
     const item = albumItems.find(i => i.id === id);
-    if (item) { setCurrentResult(item); setCurrentScreen('result'); }
+    // Don't navigate to result if image has been deleted
+    if (item && !item.image_deleted) {
+      setCurrentResult(item);
+      setCurrentScreen('result');
+    }
   }
 
   function openMenu(id) {
@@ -37,11 +41,13 @@ export default function LooksScreen() {
         { skip: albumItems.length, limit: PAGE_SIZE }
       );
       const newItems = tryons.map(t => ({
-        id: t.id, result_url: t.result_url,
+        id:                 t.id,
+        result_url:         t.result_url,
+        image_deleted:      t.image_deleted      || false,
         product_image_url:  t.product_image_url  || null,
         product_image_urls: t.product_image_urls || null,
-        is_combo:    t.is_combo    || false,
-        created_at:  t.created_at,
+        is_combo:           t.is_combo           || false,
+        created_at:         t.created_at,
       }));
       setAlbumItems(prev => [...prev, ...newItems]);
       setAlbumHasMore(has_more);

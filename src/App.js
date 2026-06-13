@@ -149,11 +149,13 @@ function AppInner() {
       const { tryons, total, has_more } = await fetchAlbum(config._id, mob);
       const items = tryons
         .map(t => ({
-          id: t.id, result_url: t.result_url,
-          product_image_url: t.product_image_url || null,
+          id:                 t.id,
+          result_url:         t.result_url,
+          image_deleted:      t.image_deleted      || false,
+          product_image_url:  t.product_image_url  || null,
           product_image_urls: t.product_image_urls || null,
-          is_combo: t.is_combo || false,
-          created_at: t.created_at,
+          is_combo:           t.is_combo           || false,
+          created_at:         t.created_at,
         }))
         .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       setAlbumItems(items);
@@ -254,16 +256,19 @@ function AppInner() {
 
       stopCreeper(true);
 
+      // New results are never expired — image_deleted: false
       const newItem = {
-        id: itemId, result_url,
-        product_image_url: productUrls[0],
+        id:                 itemId,
+        result_url,
+        image_deleted:      false,
+        product_image_url:  productUrls[0],
         product_image_urls: productUrls,
-        is_combo: productUrls.length > 1,
-        created_at: new Date().toISOString(),
+        is_combo:           productUrls.length > 1,
+        created_at:         new Date().toISOString(),
       };
 
       setAlbumItems(prev => [newItem, ...prev]);
-      setTotalTryons(prev => prev + 1);   // ← keep count in sync without re-fetching
+      setTotalTryons(prev => prev + 1);
       setCurrentResult(newItem);
       setJustGenerated(true);
       showToast('Your look is ready! ✨');
