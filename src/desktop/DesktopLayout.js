@@ -9,6 +9,9 @@ import ViewerOverlay from '../overlays/ViewerOverlay';
 import Toast from '../components/Toast';
 import NotificationBell from '../components/NotificationBell';
 import { fetchNotifications, markNotificationsRead } from '../api';
+import TermsScreen   from '../screens/TermsScreen';
+import PrivacyScreen from '../screens/PrivacyScreen';
+import HelpScreen    from '../screens/HelpScreen';
 
 const FILTERS = [
   { key: 'all',       label: 'All Looks'  },
@@ -36,6 +39,8 @@ export default function DesktopLayout({ onLogin, loading, startGenerate, genProg
   const [showProfileModal,setShowProfileModal] = useState(false);
   // Notifications panel
   const [showNotifPanel,  setShowNotifPanel]  = useState(false);
+  // Legal / Help page overlay (terms | privacy | help | null)
+  const [desktopPage,     setDesktopPage]     = useState(null);
 
   const [phone,         setPhone]         = useState('');
   const [phoneLoading,  setPhoneLoading]  = useState(false);
@@ -58,6 +63,20 @@ export default function DesktopLayout({ onLogin, loading, startGenerate, genProg
 
   // Computed active tab for nav highlight — modal tabs light up too
   const navActiveTab = showTryOnModal ? 'tryon' : showProfileModal ? 'profile' : activeTab;
+
+  // ── Open a legal/help page as a desktop overlay ───────────
+  function openPage(page) {
+    setShowProfileModal(false);
+    setShowTryOnModal(false);
+    setCurrentScreen(page); // so the screen's back-button fires setCurrentScreen('home')
+    setDesktopPage(page);
+  }
+
+  // Close the page overlay when the screen's back button calls setCurrentScreen('home')
+  useEffect(() => {
+    if (desktopPage && currentScreen === 'home') setDesktopPage(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentScreen]);
 
   // ── Nav handler ───────────────────────────────────────────
   function handleNavClick(key) {
@@ -302,9 +321,9 @@ export default function DesktopLayout({ onLogin, loading, startGenerate, genProg
             Your data is safe with us
           </div>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:12, marginTop:6 }}>
-            <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:'var(--brand)', fontWeight:700, textDecoration:'underline', textUnderlineOffset:2 }}>Terms</a>
+            <button onClick={() => openPage('terms')} style={{ fontSize:11, color:'var(--brand)', fontWeight:700, textDecoration:'underline', textUnderlineOffset:2, background:'none', border:'none', cursor:'pointer', padding:0 }}>Terms</button>
             <span style={{ fontSize:11, color:'var(--ink-3)' }}>·</span>
-            <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:'var(--brand)', fontWeight:700, textDecoration:'underline', textUnderlineOffset:2 }}>Privacy Policy</a>
+            <button onClick={() => openPage('privacy')} style={{ fontSize:11, color:'var(--brand)', fontWeight:700, textDecoration:'underline', textUnderlineOffset:2, background:'none', border:'none', cursor:'pointer', padding:0 }}>Privacy Policy</button>
           </div>
           <div className="dt-login-powered-new">Powered by <strong>BoutiqueAI</strong></div>
         </div>
@@ -601,12 +620,57 @@ export default function DesktopLayout({ onLogin, loading, startGenerate, genProg
           onPickProfilePhoto={() => profileInputRef.current?.click()}
           showToast={showToast}
           onSignOut={handleSignOut}
+          onOpenPage={openPage}
         />
       )}
 
       {/* ── Notifications Panel ── */}
       {showNotifPanel && (
         <NotifPanel onClose={() => setShowNotifPanel(false)} />
+      )}
+
+      {/* ── Legal / Help Page Overlay ── */}
+      {desktopPage && (
+        <div
+          className="dt-overlay-backdrop"
+          onClick={e => e.target === e.currentTarget && setDesktopPage(null)}
+          style={{ zIndex: 200 }}
+        >
+          <div style={{
+            background: 'var(--surface)',
+            borderRadius: 16,
+            width: '100%',
+            maxWidth: 680,
+            maxHeight: '88vh',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            position: 'relative',
+            boxShadow: '0 8px 40px rgba(0,0,0,0.18)',
+          }}>
+            {/* Standalone close button at top-right for desktop UX */}
+            <button
+              onClick={() => setDesktopPage(null)}
+              aria-label="Close"
+              style={{
+                position: 'absolute', top: 12, right: 14, zIndex: 10,
+                background: 'var(--surface-2)', border: 'none', cursor: 'pointer',
+                width: 32, height: 32, borderRadius: 8,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'var(--ink-2)',
+              }}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width={16} height={16}>
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+            <div style={{ overflowY: 'auto', flex: 1 }}>
+              {desktopPage === 'terms'   && <TermsScreen />}
+              {desktopPage === 'privacy' && <PrivacyScreen />}
+              {desktopPage === 'help'    && <HelpScreen />}
+            </div>
+          </div>
+        </div>
       )}
 
       <ViewerOverlay />
@@ -981,7 +1045,7 @@ function TryOnModal({ onClose, hasPhoto, baseFile, baseImageUrl, prodFiles, step
    PROFILE MODAL  (opened by nav "Profile" tab)
 ═══════════════════════════════════════════════════════ */
 function ProfileModal({ onClose, mobile, biz, baseImageUrl, hasBaseImage, albumItems, totalTryons,
-  uploadingBase, onPickProfilePhoto, showToast, onSignOut }) {
+  uploadingBase, onPickProfilePhoto, showToast, onSignOut, onOpenPage }) {
 
   useEffect(() => {
     const handler = e => { if (e.key === 'Escape') onClose(); };
@@ -1076,7 +1140,7 @@ function ProfileModal({ onClose, mobile, biz, baseImageUrl, hasBaseImage, albumI
             <div className="dt-profile-row-txt">Looks Generated</div>
             <div className="dt-profile-row-val" style={{ color: 'var(--brand)', fontWeight: 800 }}>{totalTryons}</div>
           </button>
-          <button className="dt-profile-row" onClick={() => showToast('Privacy settings coming soon')}>
+          <button className="dt-profile-row" onClick={() => onOpenPage('privacy')}>
             <div className="dt-profile-row-ic">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
@@ -1087,7 +1151,7 @@ function ProfileModal({ onClose, mobile, biz, baseImageUrl, hasBaseImage, albumI
               <polyline points="9 18 15 12 9 6"/>
             </svg>
           </button>
-          <button className="dt-profile-row" onClick={() => showToast('Help & Support coming soon')}>
+          <button className="dt-profile-row" onClick={() => onOpenPage('help')}>
             <div className="dt-profile-row-ic">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="10"/>
@@ -1118,9 +1182,9 @@ function ProfileModal({ onClose, mobile, biz, baseImageUrl, hasBaseImage, albumI
             Powered by <b style={{ color: 'var(--brand)' }}>BoutiqueAI</b>
           </div>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:14, marginTop:8, paddingBottom:4 }}>
-            <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ fontSize:11.5, color:'var(--brand)', fontWeight:700, textDecoration:'underline', textUnderlineOffset:2 }}>Terms of Service</a>
+            <button onClick={() => onOpenPage('terms')} style={{ fontSize:11.5, color:'var(--brand)', fontWeight:700, textDecoration:'underline', textUnderlineOffset:2, background:'none', border:'none', cursor:'pointer', padding:0 }}>Terms of Service</button>
             <span style={{ fontSize:11, color:'var(--ink-3)' }}>·</span>
-            <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ fontSize:11.5, color:'var(--brand)', fontWeight:700, textDecoration:'underline', textUnderlineOffset:2 }}>Privacy Policy</a>
+            <button onClick={() => onOpenPage('privacy')} style={{ fontSize:11.5, color:'var(--brand)', fontWeight:700, textDecoration:'underline', textUnderlineOffset:2, background:'none', border:'none', cursor:'pointer', padding:0 }}>Privacy Policy</button>
           </div>
         </div>
       </div>
