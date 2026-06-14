@@ -636,39 +636,36 @@ export default function DesktopLayout({ onLogin, loading, startGenerate, genProg
           onClick={e => e.target === e.currentTarget && setDesktopPage(null)}
           style={{ zIndex: 200 }}
         >
+          {/* position:relative + fixed height so .screen{position:absolute;inset:0} fills it correctly */}
           <div style={{
-            background: 'var(--surface)',
+            position: 'relative',
             borderRadius: 16,
             width: '100%',
             maxWidth: 680,
-            maxHeight: '88vh',
+            height: '88vh',
             overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
-            position: 'relative',
             boxShadow: '0 8px 40px rgba(0,0,0,0.18)',
           }}>
-            {/* Standalone close button at top-right for desktop UX */}
+            {/* Desktop close button — sits above the screen's own back arrow */}
             <button
               onClick={() => setDesktopPage(null)}
               aria-label="Close"
               style={{
-                position: 'absolute', top: 12, right: 14, zIndex: 10,
-                background: 'var(--surface-2)', border: 'none', cursor: 'pointer',
+                position: 'absolute', top: 12, right: 14, zIndex: 20,
+                background: 'rgba(26,53,48,0.10)', border: 'none', cursor: 'pointer',
                 width: 32, height: 32, borderRadius: 8,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'var(--ink-2)',
+                color: '#1A3530',
               }}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width={16} height={16}>
                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
               </svg>
             </button>
-            <div style={{ overflowY: 'auto', flex: 1 }}>
-              {desktopPage === 'terms'   && <TermsScreen />}
-              {desktopPage === 'privacy' && <PrivacyScreen />}
-              {desktopPage === 'help'    && <HelpScreen />}
-            </div>
+            {/* Screens use position:absolute;inset:0 — they fill the container above */}
+            {desktopPage === 'terms'   && <TermsScreen />}
+            {desktopPage === 'privacy' && <PrivacyScreen />}
+            {desktopPage === 'help'    && <HelpScreen />}
           </div>
         </div>
       )}
