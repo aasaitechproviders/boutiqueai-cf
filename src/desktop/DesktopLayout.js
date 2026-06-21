@@ -205,7 +205,7 @@ export default function DesktopLayout({ onLogin, loading, startGenerate, genProg
         const blob  = new Blob([bytes], { type: data.content_type || 'image/jpeg' });
         const href  = URL.createObjectURL(blob);
         const a     = document.createElement('a');
-        a.href = href; a.download = data.filename || `tryon_${item.id}.jpg`;
+        a.href = href; a.download = `boutiqueaitryon_${new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14)}.jpg`;
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
         setTimeout(() => URL.revokeObjectURL(href), 8000);
         showToast('Downloaded! ✓'); return;
