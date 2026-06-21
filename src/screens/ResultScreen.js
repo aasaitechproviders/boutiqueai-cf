@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { deleteTryonApi } from '../api';
+import { deleteTryonApi, downloadTryonApi } from '../api';
 
 export default function ResultScreen({ justGenerated }) {
   const {
@@ -25,6 +25,27 @@ export default function ResultScreen({ justGenerated }) {
       carRef.current.scrollLeft / (carRef.current.firstElementChild.offsetWidth + 13)
     );
     setDotIdx(idx);
+  }
+
+  async function handleDownload() {
+    showToast('Preparing download…');
+    try {
+      const data = await downloadTryonApi(item.id, mobile);
+      if (data) {
+        const bytes = Uint8Array.from(atob(data.image_b64), c => c.charCodeAt(0));
+        const blob  = new Blob([bytes], { type: data.content_type || 'image/jpeg' });
+        const href  = URL.createObjectURL(blob);
+        const a     = document.createElement('a');
+        const ts    = new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14);
+        a.href     = href;
+        a.download = `boutiqueaitryon_${ts}.jpg`;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(href), 8000);
+        showToast('Downloaded! ✓');
+        return;
+      }
+    } catch (e) {}
+    window.open(item.result_url, '_blank');
   }
 
   async function handleDelete() {
@@ -128,6 +149,17 @@ export default function ResultScreen({ justGenerated }) {
           {/* Actions — Download and Share removed */}
           <div className="ask-title">What would you like to do?</div>
           <div className="action-grid">
+            <button className="action" onClick={handleDownload}>
+              <div className="action-ic" style={{ background: 'rgba(16,185,129,.1)' }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                  style={{ color: '#10b981' }}>
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+              </div>
+              <span>Download</span>
+            </button>
             <button className="action" onClick={() => setCurrentScreen('tryon')}>
               <div className="action-ic" style={{ background: 'var(--brand-soft)' }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
