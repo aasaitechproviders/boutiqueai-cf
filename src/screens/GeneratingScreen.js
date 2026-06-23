@@ -1,7 +1,7 @@
 import { useApp } from '../context/AppContext';
 import Stepper from '../components/Stepper';
 
-const CIRC = 603;
+const CIRC = 314; // 2 * PI * 50 (r=50)
 
 export default function GeneratingScreen({ progress, onClose }) {
   const { baseImageUrl } = useApp();
@@ -9,9 +9,9 @@ export default function GeneratingScreen({ progress, onClose }) {
   const dashOffset = CIRC - (CIRC * pct / 100);
 
   const steps = [
-    { label: 'Your Photo', state: 'done' },
+    { label: 'Your Photo',     state: 'done' },
     { label: 'Product Photos', state: 'done' },
-    { label: 'Generate',   state: 'active' },
+    { label: 'Generate',       state: 'active' },
   ];
 
   return (
@@ -29,47 +29,61 @@ export default function GeneratingScreen({ progress, onClose }) {
       <Stepper steps={steps} />
 
       <div className="gen-wrap">
-        {/* Animated ring with photo inside */}
-        <div className="gen-ring-wrap">
-          {/* User photo clipped inside the circle */}
-          {baseImageUrl && (
-            <div className="gen-ring-photo">
-              <img src={baseImageUrl} alt="" />
-              {/* scanning beam + line inside circle */}
-              <div className="gen-scan-beam" />
-              <div className="gen-scan-line" />
-            </div>
-          )}
-          {/* fallback gradient when no photo */}
-          {!baseImageUrl && <div className="gen-ring-bg" />}
 
-          {/* Gold progress ring on top */}
-          <svg className="gen-ring" viewBox="0 0 212 212">
-            <defs>
-              <linearGradient id="gg" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stopColor="var(--brand)" />
-                <stop offset="1" stopColor="var(--brand-2)" />
-              </linearGradient>
-            </defs>
-            <circle className="track" cx="106" cy="106" r="96" />
-            <circle
-              className="bar" cx="106" cy="106" r="96"
-              strokeDasharray={CIRC}
-              strokeDashoffset={dashOffset}
-              transform="rotate(-90 106 106)"
-            />
-          </svg>
+        {/* ── Photo with scan line ── */}
+        <div className="gen-photo-wrap">
+          {baseImageUrl
+            ? <img src={baseImageUrl} alt="" className="gen-photo-img" />
+            : <div className="gen-photo-placeholder">🤳</div>
+          }
+          {/* scan sweep */}
+          <div className="gen-scan-beam" />
+          <div className="gen-scan-line" />
 
-          {/* Sparkle icon — only show when no photo */}
-          {!baseImageUrl && (
-            <div className="gen-core">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2l1.6 6.4L20 10l-6.4 1.6L12 18l-1.6-6.4L4 10l6.4-1.6z" opacity=".9"/>
-                <path d="M19 3l.6 2.4L22 6l-2.4.6L19 9l-.6-2.6L16 6l2.4-.6z" opacity=".6"/>
-                <path d="M6 15l.5 2L8.5 18l-2 .5L6 21l-.5-2.5L3 18l2-.8z" opacity=".5"/>
-              </svg>
-            </div>
-          )}
+          {/* Gold donut overlay — bottom-center of photo */}
+          <div className="gen-donut-wrap">
+            <svg className="gen-donut" viewBox="0 0 120 120">
+              <defs>
+                <linearGradient id="donut-grad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#FFD700" />
+                  <stop offset="100%" stopColor="#D4AF37" />
+                </linearGradient>
+              </defs>
+              {/* track */}
+              <circle
+                cx="60" cy="60" r="50"
+                fill="none"
+                stroke="rgba(255,255,255,0.18)"
+                strokeWidth="9"
+              />
+              {/* progress arc */}
+              <circle
+                cx="60" cy="60" r="50"
+                fill="none"
+                stroke="url(#donut-grad)"
+                strokeWidth="9"
+                strokeLinecap="round"
+                strokeDasharray={CIRC}
+                strokeDashoffset={dashOffset}
+                transform="rotate(-90 60 60)"
+                style={{ transition: 'stroke-dashoffset 0.4s ease', filter: 'drop-shadow(0 0 6px rgba(255,215,0,0.7))' }}
+              />
+              {/* sparkle icon center */}
+              <g transform="translate(60,60)">
+                <path
+                  d="M0 -10 L2.4 -2.4 L10 0 L2.4 2.4 L0 10 L-2.4 2.4 L-10 0 L-2.4 -2.4 Z"
+                  fill="#FFD700"
+                  opacity="0.95"
+                />
+                <path
+                  d="M7 -13 L8 -9.6 L11.4 -8.6 L8 -7.4 L7 -4 L5.8 -7.4 L2.6 -8.6 L5.8 -9.6 Z"
+                  fill="#FFD700"
+                  opacity="0.6"
+                />
+              </g>
+            </svg>
+            <div className="gen-donut-pct">{pct}%</div>
+          </div>
         </div>
 
         <div className="gen-title">Generating your look…</div>
