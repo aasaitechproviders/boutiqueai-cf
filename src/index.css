@@ -1690,222 +1690,82 @@ img {
 }
 
 /* ════════════════════════════════════════════════
-   GENERATING SCREEN — FULL-SCREEN PHOTO + SCAN
+   GENERATING SCREEN — PHOTO INSIDE RING + SCAN
 ════════════════════════════════════════════════ */
 
-/* Full-screen layout override */
-.gen-full-screen {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  background: #0a0a0a;
-  min-height: 100%;
-}
-
-/* ── Background photo ── */
-.gen-bg-photo {
+/* Photo fills the ring circle */
+.gen-ring-photo {
   position: absolute;
-  inset: 0;
-  z-index: 0;
+  inset: 8px;
+  border-radius: 50%;
   overflow: hidden;
+  z-index: 0;
 }
-.gen-bg-photo img {
+.gen-ring-photo img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center top;
-  filter: brightness(0.75) saturate(0.9);
+  filter: brightness(0.85) saturate(0.9);
 }
 
-/* ── Dark gradient dim overlay ── */
-.gen-dim {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background:
-    linear-gradient(to bottom,
-      rgba(0,0,0,0.55) 0%,
-      rgba(0,0,0,0.20) 35%,
-      rgba(0,0,0,0.20) 65%,
-      rgba(0,0,0,0.70) 100%
-    );
-}
-
-/* ── Gold scanning line ── */
-@keyframes scan-sweep {
-  0%   { top: 8%; opacity: 0; }
-  5%   { opacity: 1; }
-  48%  { top: 88%; opacity: 1; }
-  52%  { top: 88%; opacity: 0.7; }
-  55%  { opacity: 1; top: 8%; }
-  100% { top: 8%; opacity: 0; }
-}
-
+/* Scanning beam — soft gold glow band */
 @keyframes scan-beam-sweep {
-  0%   { top: 8%; }
-  50%  { top: 88%; }
-  100% { top: 8%; }
+  0%   { top: 5%; }
+  50%  { top: 85%; }
+  100% { top: 5%; }
 }
 
-/* The glowing beam (wide soft band) */
+/* Scanning line — sharp gold line */
+@keyframes scan-sweep {
+  0%   { top: 5%;  opacity: 0; }
+  5%   { opacity: 1; }
+  48%  { top: 85%; opacity: 1; }
+  52%  { top: 85%; opacity: 0.6; }
+  55%  { top: 5%;  opacity: 1; }
+  100% { top: 5%;  opacity: 0; }
+}
+
 .gen-scan-beam {
   position: absolute;
   left: 0; right: 0;
-  height: 80px;
+  height: 60px;
   background: linear-gradient(180deg,
     transparent 0%,
-    rgba(212, 175, 55, 0.08) 30%,
-    rgba(212, 175, 55, 0.18) 50%,
-    rgba(212, 175, 55, 0.08) 70%,
+    rgba(212,175,55,0.10) 30%,
+    rgba(212,175,55,0.22) 50%,
+    rgba(212,175,55,0.10) 70%,
     transparent 100%
   );
   transform: translateY(-50%);
-  animation: scan-beam-sweep 3.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
-  z-index: 2;
+  animation: scan-beam-sweep 3s cubic-bezier(0.45, 0, 0.55, 1) infinite;
   pointer-events: none;
+  z-index: 1;
 }
 
-/* The sharp bright line */
 .gen-scan-line {
   position: absolute;
   left: 0; right: 0;
   height: 2px;
   background: linear-gradient(90deg,
     transparent 0%,
-    rgba(212,175,55,0.4) 8%,
-    #FFD700 30%,
-    #FFF0A0 50%,
-    #FFD700 70%,
-    rgba(212,175,55,0.4) 92%,
+    rgba(212,175,55,0.3) 10%,
+    #FFD700 35%,
+    #FFFACD 50%,
+    #FFD700 65%,
+    rgba(212,175,55,0.3) 90%,
     transparent 100%
   );
   box-shadow:
-    0 0 6px 2px rgba(255, 215, 0, 0.5),
-    0 0 18px 6px rgba(212, 175, 55, 0.25);
+    0 0 6px 2px rgba(255,215,0,0.55),
+    0 0 16px 5px rgba(212,175,55,0.25);
   transform: translateY(-50%);
-  animation: scan-sweep 3.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
-  z-index: 3;
+  animation: scan-sweep 3s cubic-bezier(0.45, 0, 0.55, 1) infinite;
   pointer-events: none;
+  z-index: 2;
 }
 
-/* ── Back button ── */
-.gen-back-btn {
-  position: absolute;
-  top: calc(16px + var(--safe-t, 0px));
-  left: 16px;
-  z-index: 10;
-  width: 40px; height: 40px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.18);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,0.25);
-  display: flex; align-items: center; justify-content: center;
-  color: #fff;
-  cursor: pointer;
-  transition: background .18s;
+/* Ring SVG sits above photo */
+.gen-ring-wrap .gen-ring {
+  z-index: 3;
 }
-.gen-back-btn:active { background: rgba(255,255,255,0.30); }
-.gen-back-btn svg { width: 20px; height: 20px; }
-
-/* ── Title ── */
-.gen-title-top {
-  position: relative;
-  z-index: 10;
-  font-size: 24px;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -.01em;
-  text-align: center;
-  margin-top: calc(72px + var(--safe-t, 0px));
-  margin-bottom: auto;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.5);
-}
-
-/* ── Ring centered ── */
-.gen-ring-center {
-  position: relative;
-  z-index: 10;
-  margin: 0;
-}
-
-/* Make the ring backdrop slightly dark/glassy */
-.gen-ring-center .gen-ring-bg {
-  background: radial-gradient(circle at 50% 50%, rgba(0,0,0,0.45) 40%, transparent 70%);
-}
-.gen-ring-center .gen-core { color: #FFD700; }
-.gen-ring-center .gen-core svg {
-  filter: drop-shadow(0 0 14px rgba(255,215,0,0.6));
-}
-
-/* Ring track/bar gold override for dark background */
-.gen-ring-center .gen-ring .track { stroke: rgba(255,255,255,0.15); }
-
-/* ── Percentage + bar ── */
-.gen-progress-area {
-  position: relative;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  margin-top: 18px;
-  margin-bottom: auto;
-  width: 100%;
-  padding: 0 40px;
-}
-.gen-pct-big {
-  font-size: 20px;
-  font-weight: 800;
-  color: #FFD700;
-  text-shadow: 0 0 12px rgba(255,215,0,0.5);
-}
-.gen-bar-full {
-  width: 100%;
-  max-width: 280px;
-}
-
-/* ── Feature cards bottom ── */
-.gen-feats-bottom {
-  position: relative;
-  z-index: 10;
-  width: 100%;
-  max-width: 360px;
-  padding: 0 16px;
-  margin-bottom: calc(24px + var(--safe-b, 0px));
-  margin-top: 22px;
-  gap: 10px;
-}
-
-.gen-feat-card--dark {
-  background: rgba(255,255,255,0.12) !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.20) !important;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.25) !important;
-}
-.gen-feat-card--dark svg {
-  color: #FFD700 !important;
-}
-.gen-feat-card--dark span {
-  color: rgba(255,255,255,0.90) !important;
-}
-
-/* Badge check icon */
-.gen-feat-icon-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.gen-feat-check {
-  position: absolute;
-  bottom: -6px;
-  right: -8px;
-  width: 18px; height: 18px;
-  display: flex;
-}
-.gen-feat-check svg { width: 18px; height: 18px; }
